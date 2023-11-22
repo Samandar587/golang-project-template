@@ -2,31 +2,18 @@ package app
 
 import (
 	"fmt"
-	"golang-project-template/internal/models"
+	"golang-project-template/internal/delivery/http/controller"
+	"golang-project-template/internal/delivery/http/router"
 	"golang-project-template/internal/repository"
+	"golang-project-template/internal/usecases"
 	"log"
+	"net/http"
 	"os"
 
 	_ "github.com/lib/pq"
 
 	"github.com/spf13/cobra"
 )
-
-/*
-	var rootCmd = &cobra.Command{
-		Use: "grpc-server",
-		Run: func(cmd *cobra.Command, args []string) {
-			// Application entrypoint...
-			name, _ := cmd.Flags().GetString("name")
-			fmt.Println("hello, ", name)
-			fmt.Println("Salom, Dunyo!")
-
-			// remove it when you run http/grpc server
-			c := make(chan string)
-			<-c
-		},
-	}
-*/
 
 var rootCmd = &cobra.Command{
 	Use:   "backend",
@@ -40,18 +27,20 @@ var rootCmd = &cobra.Command{
 			log.Println(err)
 		}
 		defer db.Close()
-		fmt.Println("connection is successfull")
 
-		var user models.User
-		row := db.QueryRow("select * from users where id = $1", 17)
-		err = row.Scan(&user.Id, &user.Name, &user.Email)
-		if err != nil {
-			log.Println(err)
-		}
-		fmt.Println("After QueryRow", user.Email, user.Id, user.Name)
+		userRepository := repository.NewUserRepository(db)
+		userUsecase := usecases.NewUserUsecase(userRepository)
 
-		ch := make(chan string)
-		<-ch
+		// Create an instance of UserController
+		userController := controller.NewUserController(userUsecase)
+
+		// Create a new Gorilla Mux router
+		r := router.NewRouter(userController)
+
+		// Start the HTTP server
+		port := ":5005"
+		log.Printf("Server listening on port %s...\n", port)
+		log.Fatal(http.ListenAndServe(port, r))
 	},
 }
 

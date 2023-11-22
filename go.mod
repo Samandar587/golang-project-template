@@ -3,6 +3,7 @@ module golang-project-template
 go 1.21.3
 
 require (
+	github.com/gorilla/mux v1.8.1
 	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.8.0
 )
