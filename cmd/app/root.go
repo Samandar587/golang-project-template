@@ -16,7 +16,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "backend",
+	Use:   "http-backend",
 	Short: "Run the backend server",
 	Run: func(cmd *cobra.Command, args []string) {
 		name, _ := cmd.Flags().GetString("name")
@@ -30,29 +30,16 @@ var rootCmd = &cobra.Command{
 
 		userRepository := repository.NewUserRepository(db)
 		userUsecase := usecases.NewUserUsecase(userRepository)
-
-		// Create an instance of UserController
 		userController := controller.NewUserController(userUsecase)
 
-		// Create a new Gorilla Mux router
 		r := router.NewRouter(userController)
 
-		// Start the HTTP server
 		port := ":5005"
 		log.Printf("Server listening on port %s...\n", port)
 		log.Fatal(http.ListenAndServe(port, r))
 	},
 }
 
-/*
-	func startHTTPServer(servive foobar) {
-		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintf(w, "Hello, this is an HTTP server!")
-		})
-
-		log.Fatal(http.ListenAndServe(":5005", nil))
-	}
-*/
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error while executing your CLI '%s'", err)

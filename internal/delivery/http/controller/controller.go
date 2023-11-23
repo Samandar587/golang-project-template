@@ -5,6 +5,8 @@ import (
 	"golang-project-template/internal/models"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 type UserController struct {
@@ -60,4 +62,39 @@ func (c *UserController) GetAllUsersHandler(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(users)
 
+}
+
+func (c *UserController) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+	var user models.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	updatedUser, err := c.userUsecase.UpdateUser(&user)
+	if err != nil {
+		http.Error(w, "Failed to update the user: "+err.Error(), http.StatusInternalServerError)
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updatedUser)
+}
+
+func (c *UserController) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	userID, err := strconv.Atoi(id)
+	if err != nil {
+		http.Error(w, "Invalid or missing user ID parameter", http.StatusBadRequest)
+		return
+	}
+
+	err = c.userUsecase.DeleteUser(userID)
+	if err != nil {
+		http.Error(w, "Failed to delete user: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	res := map[string]string{"message": "User has been successfully deleted"}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
 }

@@ -14,7 +14,6 @@ func NewUserUsecase(userRepository models.UserRepository) models.UserUsecase {
 	}
 }
 
-// CreateUser creates a new user.
 func (u *userUsecase) CreateUser(user *models.User) (int, error) {
 
 	id, err := u.userRepository.Create(user)
@@ -24,7 +23,6 @@ func (u *userUsecase) CreateUser(user *models.User) (int, error) {
 	return id, nil
 }
 
-// GetUserByID retrieves a user by ID.
 func (u *userUsecase) GetUserByID(userID int) (*models.User, error) {
 	user, err := u.userRepository.GetByID(userID)
 	if err != nil {
@@ -40,4 +38,23 @@ func (u *userUsecase) GetAllUsers() ([]*models.User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+func (u *userUsecase) UpdateUser(user *models.User) (*models.User, error) {
+	user, err := u.userRepository.Update(user)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (u *userUsecase) DeleteUser(id int) error {
+	err := u.userRepository.Delete(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
